@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Audit Chain - Tamper Panel</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+    .btn-tamper { background: #e63946; color: white; }
+    .btn-verify { background: #2a9d8f; color: white; padding: 12px 20px; font-size: 16px; margin-top: 15px; }
+    .status-box { margin-top: 15px; padding: 12px; border-radius: 6px; font-weight: bold; display: none; }
+    .status-ok { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .status-tampered { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Academic Record System - Admin Tamper Panel</h2>
+    <p>Simulate a direct database modification, then verify chain integrity across records.</p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Course</th>
+          <th>Grade Score</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="row-STU-101">
+          <td>STU-101</td>
+          <td>Alice Johnson</td>
+          <td>CS-301</td>
+          <td id="grade-STU-101">42</td>
+          <td>
+            <button class="btn-tamper" onclick="triggerTamper('STU-101', 92)">Unsafe Edit (Force 92)</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn-verify" onclick="triggerVerify()">Verify Chain Integrity</button>
+
+    <div id="status-box" class="status-box"></div>
+  </div>
+
+  <script>
+    // Replace this URL with Person A's deployed backend server URL (e.g., Render/Railway domain)
+    const BACKEND_URL = 'https://YOUR-BACKEND-API-URL.com';
+
+    // 1. Send request to Person A's /api/tamper endpoint
+    async function triggerTamper(studentId, newGrade) {
+      const statusBox = document.getElementById('status-box');
+      
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/tamper`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_id: studentId, grade_score: newGrade })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById(`grade-${studentId}`).innerText = newGrade;
+          statusBox.className = 'status-box status-tampered';
+          statusBox.style.display = 'block';
+          statusBox.innerText = `[TAMPER SUCCESSFUL] Direct database grade forced to ${newGrade}. Hash chain not updated!`;
+        } else {
+          alert(`Tamper request failed: ${data.message || 'Error occurred'}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to backend server. Make sure BACKEND_URL is set correctly.');
+      }
+    }
+
+    // 2. Send request to Person A's /api/verify endpoint
+    async function triggerVerify() {
+      const statusBox = document.getElementById('status-box');
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/verify`);
+        const data = await response.json();
+
+        statusBox.style.display = 'block';
+
+        if (data.isValid) {
+          statusBox.className = 'status-box status-ok';
+          statusBox.innerText = '✓ INTEGRITY VERIFIED: All cryptographic hash signatures match.';
+        } else {
+          statusBox.className = 'status-box status-tampered';
+          statusBox.innerText = `⚠ TAMPER DETECTED! Broken link found at Student ID: ${data.tamperedRecordId || 'STU-101'}. Hash mismatch.`;
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not connect to backend server. Make sure BACKEND_URL is set correctly.');
+      }
+    }
+  </script>
+
+</body>
+</html>
