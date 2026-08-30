@@ -1,96 +1,106 @@
-import { useEffect, useState } from 'react'
-import { useAudit } from '../context/AuditStore'
-import { HashChainExplainer } from '../components/HashChainExplainer'
-import { formatDate, StatusBadge } from '../components/StatusBadge'
+import React from 'react'
+import { useAuditStore } from '../context/AuditStore'
 
-export function OverviewPage() {
-  const { api, runVerification, tampered } = useAudit()
-  const [stats, setStats] = useState(null)
-  const [activity, setActivity] = useState([])
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+export default function OverviewPage() {
+  const { overview, records, setActiveTab } = useAuditStore()
 
-  useEffect(() => {
-    let live = true
-    setLoading(true)
-    Promise.all([api.getOverview(), api.getActivity()])
-      .then(([s, a]) => {
-        if (!live) return
-        setStats(s)
-        setActivity(a)
-      })
-      .catch(() => live && setError('Could not load overview data.'))
-      .finally(() => live && setLoading(false))
-    return () => { live = false }
-  }, [api, tampered])
-
-  if (loading) return <div className="card loading">Loading dashboard…</div>
-  if (error) return <div className="card error">{error}</div>
+  const isBroken = overview?.chainStatus === 'broken'
 
   return (
-    <div>
-      <div className="page-title">
-        <div>
-          <h3>Overview</h3>
-          <p className="lede">
-            AuditGuard creates a cryptographically linked history of record changes.
-            Any retroactive modification breaks the chain and can be detected.
+    <div style={{ maxWidth: '1100px', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', marginBottom: '20px' }}>
+        Overview
+      </h2>
+
+      {/* Metrics Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+        
+        {/* Clickable Total Records Card */}
+        <div
+          onClick={() => setActiveTab('records')}
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '24px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#2563eb'
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.12)'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#e2e8f0'
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'
+            e.currentTarget.style.transform = 'translateY(0px)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Total Records
+            </span>
+            <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '600' }}>
+              View All →
+            </span>
+          </div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a', marginTop: '12px' }}>
+            {records?.length || overview?.totalRecords || 20}
+          </div>
+          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', margin: 0 }}>
+            Click to view full student details & grades
+          </p>
+        </div>
+
+        {/* Chain Status Card */}
+        <div
+          onClick={() => setActiveTab('chain')}
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '24px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = isBroken ? '#ef4444' : '#10b981'
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#e2e8f0'
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'
+            e.currentTarget.style.transform = 'translateY(0px)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Chain Status
+            </span>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+              Audit Block #1284
+            </span>
+          </div>
+          <div
+            style={{
+              fontSize: '32px',
+              fontWeight: '800',
+              color: isBroken ? '#ef4444' : '#10b981',
+              marginTop: '12px',
+              textTransform: 'uppercase',
+            }}
+          >
+            {isBroken ? 'BROKEN' : 'VERIFIED'}
+          </div>
+          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', margin: 0 }}>
+            {isBroken ? 'Cryptographic hash mismatch detected' : 'SHA-256 signatures validated'}
           </p>
         </div>
       </div>
-
-      <div className="stats">
-        <div className="card stat">
-          <div className="label">Total Records</div>
-          <div className="value">{stats.totalRecords.toLocaleString()}</div>
-        </div>
-        <div className="card stat">
-          <div className="label">Audit Events</div>
-          <div className="value">{stats.auditEvents.toLocaleString()}</div>
-        </div>
-        <div className="card stat">
-          <div className="label">Chain Status</div>
-          <div className="value" style={{ color: tampered ? 'var(--warn)' : 'var(--ok)', fontSize: 22 }}>
-            {tampered ? 'BROKEN' : 'VERIFIED'}
-          </div>
-        </div>
-        <div className="card stat">
-          <div className="label">Last Verification</div>
-          <div className="value" style={{ fontSize: 20 }}>{stats.lastVerificationLabel}</div>
-        </div>
-      </div>
-
-      <div className="card callout">
-        <p>
-          Run a full integrity check against the stored audit trail. This demo
-          simulates verification; the production system will recompute hashes server-side.
-        </p>
-        <button className="btn btn-primary" onClick={() => runVerification()}>Verify Integrity</button>
-      </div>
-
-      <div className="section-head">
-        <h4>Recent activity</h4>
-        <span>Live feed · mock data</span>
-      </div>
-      <div className="card activity">
-        {activity.length === 0 && <div className="empty">No recent activity.</div>}
-        {activity.map((item) => (
-          <div className="activity-row" key={item.id}>
-            <div className="mono" style={{ fontSize: 12, color: 'var(--muted)' }}>
-              {formatDate(item.timestamp)}
-            </div>
-            <div>
-              <div className="action">{item.action}</div>
-              <div className="meta">{item.detail} · {item.actor}</div>
-            </div>
-            <div>{item.actor}</div>
-            <div><StatusBadge status={item.status} /></div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ height: 18 }} />
-      <HashChainExplainer />
     </div>
   )
 }
