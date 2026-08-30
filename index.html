@@ -1,182 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Academic Audit Chain - Tamper Panel</title>
-    <style>
-    
-
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background-color: #F0F4F8; color: #333; margin: 0; }
-        .dashboard-container { max-width: 1100px; margin: 0 auto; }
-        .card { background-color: white; padding: 25px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
-        .card-header { border-bottom: 2px solid #E0E6ED; padding-bottom: 20px; margin-bottom: 25px; }
-        h1 { margin: 0; color: #2C3E50; font-weight: 700; font-size: 28px; }
-        .card-desc { color: #607D8B; margin-top: 8px; font-size: 16px; font-weight: 500; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; border-radius: 8px; overflow: hidden; }
-        th { background-color: #405668; color: white; text-align: left; padding: 14px 18px; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
-        td { padding: 14px 18px; border-bottom: 1px solid #E0E6ED; font-size: 15px; color: #444; }
-        tr:nth-child(even) td { background-color: #F9FAFB; }
-        tr:hover td { background-color: #E8F0FE; }
-        .hash-cell { font-family: 'Courier New', monospace; font-size: 13px; background-color: #F1F3F5; color: #555; padding: 5px 8px; border-radius: 4px; border: 1px solid #E0E6ED; display: inline-block; width: 100px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
-        
-        .btn { padding: 9px 16px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; transition: background-color 0.2s, box-shadow 0.2s; }
-        .btn:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
-        .btn-tamper { background-color: #A94442; color: white; }
-        .btn-tamper:hover { background-color: #8C3A38; }
-        .btn-verify { background-color: #3C763D; color: white; padding: 12px 25px; font-size: 16px; margin-top: 25px; display: block; width: fit-content; margin-left: 0; }
-        .btn-verify:hover { background-color: #315C31; }
-
-        .status-box { margin-top: 20px; padding: 15px 20px; border-radius: 8px; font-weight: 600; font-size: 15px; display: none; line-height: 1.4; }
-        .status-box .status-icon { margin-right: 12px; }
-        .status-ok { background-color: #DFF0D8; color: #3C763D; border: 1px solid #C3E6CB; }
-        .status-tampered { background-color: #F2DEDE; color: #A94442; border: 1px solid #EBCCD1; }
-        .tampered-row td { background-color: #FBEAED !important; border-color: #EBCCD1; color: #A94442 !important; font-weight: 600; }
-        .tampered-row td .hash-cell { background-color: #E6C5C9; color: #A94442; border-color: #EBCCD1; }
-    </style>
-</head>
-<body>
-
-  <div class="dashboard-container">
-    <div class="card">
-        <div class="card-header">
-            <h1>Academic Audit Chain - Tamper Panel</h1>
-            <p class="card-desc">Interact with the decentralized ledger. Modify database records directly to simulate an attack, then run cryptographic chain verification.</p>
-        </div>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Record ID (Block)</th>
-                    <th>Timestamp</th>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Course (Term)</th>
-                    <th>Grade</th>
-                    <th>Record Hash (Muted)</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="data-body">
-                <tr id="row-STU-101">
-                    <td>#1001</td>
-                    <td>2024-05-12 09:15</td>
-                    <td>STU-101</td>
-                    <td>Alice Johnson</td>
-                    <td>CS-301 (Spring 2024)```html
-                    <td id="grade-STU-101">92</td>
-                    <td><span class="hash-cell">a7f9b2c4...</span></td>
-                    <td>
-                        <button class="btn btn-tamper" onclick="triggerTamper('STU-101', 42)">Unsafe Edit (Force 42)</button>
-                    </td>
-                </tr>
-                <tr id="row-STU-102">
-                    <td>#1002</td>
-                    <td>2024-05-12 11:30</td>
-                    <td>STU-102</td>
-                    <td>Bob Smith</td>
-                    <td>CS-401 (Spring 2024)</td>
-                    <td id="grade-STU-102">85</td>
-                    <td><span class="hash-cell">8d3e1f0a...</span></td>
-                    <td>
-                        <button class="btn btn-tamper" onclick="triggerTamper('STU-102', 100)">Unsafe Edit (Force 100)</button>
-                    </td>
-                </tr>
-                <tr id="row-STU-103">
-                    <td>#1003</td>
-                    <td>2024-05-13 14:05</td>
-                    <td>STU-103</td>
-                    <td>Charlie Davis</td>
-                    <td>MATH-202 (Spring 2024)</td>
-                    <td id="grade-STU-103">96</td>
-                    <td><span class="hash-cell">4b9c8d1e...</span></td>
-                    <td>
-                        <button class="btn btn-tamper" onclick="triggerTamper('STU-103', 60)">Unsafe Edit (Force 60)</button>
-                    </td>
-                </tr>
-                <tr id="row-STU-104">
-                    <td>#1004</td>
-                    <td>2024-05-14 10:55</td>
-                    <td>STU-104</td>
-                    <td>Diana Evans</td>
-                    <td>CS-301 (Spring 2024)</td>
-                    <td id="grade-STU-104">78</td>
-                    <td><span class="hash-cell">6f0a2b9d...</span></td>
-                    <td>
-                        <button class="btn btn-tamper" onclick="triggerTamper('STU-104', 98)">Unsafe Edit (Force 98)</button>
-                    </td>
-                </tr>
-                <tr id="row-STU-105">
-                    <td>#1005</td>
-                    <td>2024-05-15 08:20</td>
-                    <td>STU-105</td>
-                    <td>Ethan Foster</td>
-                    <td>ENG-101 (Spring 2024)</td>
-                    <td id="grade-STU-105">88</td>
-                    <td><span class="hash-cell">c1e2f3a4...</span></td>
-                    <td>
-                        <button class="btn btn-tamper" onclick="triggerTamper('STU-105', 72)">Unsafe Edit (Force 72)</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <button class="btn btn-verify" onclick="triggerVerify()">Verify Audit Chain Integrity</button>
-
-        <div id="status-box" class="status-box">
-            <span class="status-icon" id="status-icon"></span><span id="status-text"></span>
-        </div>
-    </div>
-  </div>
-
-  <script>
-      const BACKEND_URL = "https://cryptographic-audit-layer.onrender.com";
-      
-    // State tracking for mock mode
-    let tamperedRecord = null;
-
-    async function triggerTamper(studentId, newGrade) {
-      const statusBox = document.getElementById('status-box');
-      const statusIcon = document.getElementById('status-icon');
-      const statusText = document.getElementById('status-text');
-      
-      // Update UI grade value immediately
-      document.getElementById(`grade-${studentId}`).innerText = newGrade;
-      
-      // Track which record was modified without re-calculating hashes
-      tamperedRecord = studentId;
-
-      statusBox.className = 'status-box status-tampered';
-      statusIcon.innerText = '⚠'; // Warning icon
-      statusText.innerText = `[MOCK TAMPER SUCCESS] Direct database grade forced to ${newGrade} for ${studentId}. Hash chain signature was NOT updated!`;
-      statusBox.style.display = 'block';
-    }
-
-    async function triggerVerify() {
-      const statusBox = document.getElementById('status-box');
-      const statusIcon = document.getElementById('status-icon');
-      const statusText = document.getElementById('status-text');
-      statusBox.style.display = 'block';
-
-      // Reset row highlights
-      const rows = document.querySelectorAll('#data-body tr');
-      rows.forEach(row => row.classList.remove('tampered-row'));
-
-      if (!tamperedRecord) {
-        statusBox.className = 'status-box status-ok';
-        statusIcon.innerText = '✓'; // Check icon
-        statusText.innerText = 'INTEGRITY VERIFIED: All cryptographic hash signatures match sequentially and database payload is intact.';
-      } else {
-        // Highlight the tampered row
-        document.getElementById(`row-${tamperedRecord}`).classList.add('tampered-row');
-
-        statusBox.className = 'status-box status-tampered';
-        statusIcon.innerText = '⚠'; // Warning icon
-        statusText.innerText = `TAMPER DETECTED! Hash signature mismatch at Record ID: ${tamperedRecord} (Student: ${tamperedRecord}). Expected payload digest does not match current database contents. Audit trail is broken.`;
-      }
-    }
-  </script>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AuditGuard — Exam Records Integrity System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
