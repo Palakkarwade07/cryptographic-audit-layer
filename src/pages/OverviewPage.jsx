@@ -3,101 +3,44 @@ import { useAuditStore } from '../context/AuditStore'
 
 export default function OverviewPage() {
   const { overview, records, setActiveTab } = useAuditStore()
-
   const isBroken = overview?.chainStatus === 'broken'
 
   return (
-    <div style={{ maxWidth: '1100px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', marginBottom: '20px' }}>
-        Overview
-      </h2>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-slate-800">System Overview</h2>
+      </div>
 
-      {/* Metrics Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Clickable Total Records Card */}
-        <div
+        <div 
           onClick={() => setActiveTab('records')}
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '24px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#2563eb'
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.12)'
-            e.currentTarget.style.transform = 'translateY(-2px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#e2e8f0'
-            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'
-            e.currentTarget.style.transform = 'translateY(0px)'
-          }}
+          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group"
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Total Records
-            </span>
-            <span style={{ fontSize: '12px', color: '#2563eb', fontWeight: '600' }}>
-              View All →
-            </span>
+          <div className="flex justify-between items-center text-slate-500 font-medium text-sm">
+            <span>TOTAL RECORDS</span>
+            <span className="text-blue-600 group-hover:translate-x-1 transition-transform">View All →</span>
           </div>
-          <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a', marginTop: '12px' }}>
+          <div className="text-4xl font-extrabold text-slate-900 mt-4">
             {records?.length || overview?.totalRecords || 20}
           </div>
-          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', margin: 0 }}>
-            Click to view full student details & grades
-          </p>
+          <p className="text-xs text-slate-400 mt-2">Click to inspect individual student grade records</p>
         </div>
 
         {/* Chain Status Card */}
-        <div
+        <div 
           onClick={() => setActiveTab('chain')}
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '24px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = isBroken ? '#ef4444' : '#10b981'
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)'
-            e.currentTarget.style.transform = 'translateY(-2px)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#e2e8f0'
-            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'
-            e.currentTarget.style.transform = 'translateY(0px)'
-          }}
+          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer"
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Chain Status
-            </span>
-            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
-              Audit Block #1284
-            </span>
+          <div className="flex justify-between items-center text-slate-500 font-medium text-sm">
+            <span>CHAIN STATUS</span>
+            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">SHA-256 Ledger</span>
           </div>
-          <div
-            style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              color: isBroken ? '#ef4444' : '#10b981',
-              marginTop: '12px',
-              textTransform: 'uppercase',
-            }}
-          >
+          <div className={`text-3xl font-extrabold mt-4 uppercase ${isBroken ? 'text-red-600' : 'text-emerald-600'}`}>
             {isBroken ? 'BROKEN' : 'VERIFIED'}
           </div>
-          <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px', margin: 0 }}>
-            {isBroken ? 'Cryptographic hash mismatch detected' : 'SHA-256 signatures validated'}
+          <p className="text-xs text-slate-400 mt-2">
+            {isBroken ? 'Tampering detected in chain validation' : 'All cryptographic block hashes match'}
           </p>
         </div>
       </div>
