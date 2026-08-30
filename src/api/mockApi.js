@@ -1,13 +1,5 @@
 /**
  * Simulated API layer.
- *
- * Swap these functions for fetch() calls later, e.g.:
- *   GET  /api/records
- *   GET  /api/audit-chain
- *   POST /api/verify
- *
- * This module holds in-memory demo state only. It does not
- * touch a real database or compute SHA-256.
  */
 
 import {
@@ -18,7 +10,6 @@ import {
   TAMPER_TARGET,
 } from '../data/mockData'
 
-const API_BASE_URL = "https://cryptographic-audit-layer.onrender.com";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let tampered = false
@@ -32,34 +23,35 @@ export async function getOverview() {
   return {
     ...SYSTEM_STATS,
     chainStatus: tampered ? 'broken' : 'verified',
-    lastVerificationLabel: SYSTEM_STATS.lastVerificationLabel,
+    lastVerificationLabel: SYSTEM_STATS?.lastVerificationLabel || 'Just now',
     simulation: true,
   }
 }
 
 export async function getActivity() {
   await delay(120)
-  if (!tampered) return ACTIVITY
+  if (!tampered) return ACTIVITY || []
   return [
     {
       id: 'act-tamper',
       timestamp: new Date().toISOString(),
       actor: 'Unknown (direct DB write)',
       action: 'Out-of-band grade change detected on STU-1024',
-      detail: `Expected ${TAMPER_TARGET.expectedGrade} · detected ${TAMPER_TARGET.tamperedGrade}`,
+      detail: `Expected ${TAMPER_TARGET?.expectedGrade || 'A'} · detected ${TAMPER_TARGET?.tamperedGrade || 'F'}`,
       status: 'compromised',
     },
-    ...ACTIVITY,
+    ...(ACTIVITY || []),
   ]
 }
 
 export async function getRecords() {
   await delay(140)
+  if (!RECORDS) return []
   return RECORDS.map((record) => {
-    if (tampered && record.id === TAMPER_TARGET.recordId) {
+    if (tampered && record.id === TAMPER_TARGET?.recordId) {
       return {
         ...record,
-        grade: TAMPER_TARGET.tamperedGrade,
+        grade: TAMPER_TARGET?.tamperedGrade || 'F',
         hashStatus: 'compromised',
       }
     }
@@ -69,17 +61,18 @@ export async function getRecords() {
 
 export async function getAuditChain() {
   await delay(140)
+  if (!AUDIT_CHAIN) return []
   return AUDIT_CHAIN.map((entry) => {
     if (!tampered) return { ...entry }
-    if (entry.entryNumber === TAMPER_TARGET.entryNumber) {
+    if (entry.entryNumber === TAMPER_TARGET?.entryNumber) {
       return {
         ...entry,
         status: 'compromised',
         entryHash: '????????????????',
-        detectedValue: TAMPER_TARGET.tamperedGrade,
+        detectedValue: TAMPER_TARGET?.tamperedGrade || 'F',
       }
     }
-    if (entry.entryNumber > TAMPER_TARGET.entryNumber) {
+    if (entry.entryNumber > TAMPER_TARGET?.entryNumber) {
       return { ...entry, status: 'untrusted' }
     }
     return { ...entry }
@@ -88,12 +81,12 @@ export async function getAuditChain() {
 
 export async function verifyIntegrity() {
   await delay(80)
-  const chain = AUDIT_CHAIN.map((entry) => {
+  const chain = (AUDIT_CHAIN || []).map((entry) => {
     if (!tampered) return { ...entry, status: 'valid' }
-    if (entry.entryNumber === TAMPER_TARGET.entryNumber) {
+    if (entry.entryNumber === TAMPER_TARGET?.entryNumber) {
       return { ...entry, status: 'compromised' }
     }
-    if (entry.entryNumber > TAMPER_TARGET.entryNumber) {
+    if (entry.entryNumber > TAMPER_TARGET?.entryNumber) {
       return { ...entry, status: 'untrusted' }
     }
     return { ...entry, status: 'valid' }
@@ -103,9 +96,9 @@ export async function verifyIntegrity() {
     return {
       ok: true,
       title: 'Integrity Verified',
-      summary: `${SYSTEM_STATS.auditEvents.toLocaleString()} audit entries checked`,
+      summary: `${SYSTEM_STATS?.auditEvents?.toLocaleString() || 0} audit entries checked`,
       detail: 'No inconsistencies detected',
-      checkedCount: SYSTEM_STATS.auditEvents,
+      checkedCount: SYSTEM_STATS?.auditEvents || 0,
       compromisedEntry: null,
       steps: chain,
     }
@@ -114,12 +107,12 @@ export async function verifyIntegrity() {
   return {
     ok: false,
     title: 'Integrity Check Failed',
-    summary: `Tampering detected at Entry #${TAMPER_TARGET.entryNumber}`,
-    detail: `Expected value: ${TAMPER_TARGET.expectedGrade}  ·  Detected value: ${TAMPER_TARGET.tamperedGrade}`,
-    checkedCount: SYSTEM_STATS.auditEvents,
-    compromisedEntry: TAMPER_TARGET.entryNumber,
-    expectedValue: TAMPER_TARGET.expectedGrade,
-    detectedValue: TAMPER_TARGET.tamperedGrade,
+    summary: `Tampering detected at Entry #${TAMPER_TARGET?.entryNumber || 1}`,
+    detail: `Expected value: ${TAMPER_TARGET?.expectedGrade || 'A'} · Detected value: ${TAMPER_TARGET?.tamperedGrade || 'F'}`,
+    checkedCount: SYSTEM_STATS?.auditEvents || 0,
+    compromisedEntry: TAMPER_TARGET?.entryNumber || 1,
+    expectedValue: TAMPER_TARGET?.expectedGrade || 'A',
+    detectedValue: TAMPER_TARGET?.tamperedGrade || 'F',
     steps: chain,
   }
 }
@@ -128,15 +121,16 @@ export async function simulateDatabaseTampering() {
   await delay(220)
   tampered = true
   return {
+    success: true,
     simulation: true,
-    recordId: TAMPER_TARGET.recordId,
-    expectedGrade: TAMPER_TARGET.expectedGrade,
-    detectedGrade: TAMPER_TARGET.tamperedGrade,
+    recordId: TAMPER_TARGET?.recordId,
+    expectedGrade: TAMPER_TARGET?.expectedGrade,
+    detectedGrade: TAMPER_TARGET?.tamperedGrade,
   }
 }
 
 export async function resetSimulation() {
   await delay(100)
   tampered = false
-  return { simulation: true, reset: true }
+  return { success: true, simulation: true, reset: true }
 }
