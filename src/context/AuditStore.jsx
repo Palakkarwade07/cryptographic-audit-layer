@@ -52,6 +52,11 @@ export function AuditProvider({ children }) {
   )
 }
 
+// Export both names to satisfy all imports across pages
 export function useAuditStore() {
+  return useContext(AuditContext)
+}
+
+export function useAudit() {
   return useContext(AuditContext)
 }
