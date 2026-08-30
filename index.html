@@ -51,58 +51,33 @@
   </div>
 
   <script>
-    // Replace this URL with Person A's deployed backend server URL (e.g., Render/Railway domain)
-    const BACKEND_URL = 'https://YOUR-BACKEND-API-URL.com';
+   // Mock State
+let isTampered = false;
 
-    // 1. Send request to Person A's /api/tamper endpoint
-    async function triggerTamper(studentId, newGrade) {
-      const statusBox = document.getElementById('status-box');
-      
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/tamper`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ student_id: studentId, grade_score: newGrade })
-        });
+async function triggerTamper(studentId, newGrade) {
+  const statusBox = document.getElementById('status-box');
+  
+  // Update UI immediately to reflect forced edit
+  document.getElementById(`grade-${studentId}`).innerText = newGrade;
+  isTampered = true;
 
-        const data = await response.json();
+  statusBox.className = 'status-box status-tampered';
+  statusBox.style.display = 'block';
+  statusBox.innerText = `[MOCK TAMPER SUCCESS] Grade modified directly in database to ${newGrade}. Hash chain integrity is now broken!`;
+}
 
-        if (response.ok) {
-          document.getElementById(`grade-${studentId}`).innerText = newGrade;
-          statusBox.className = 'status-box status-tampered';
-          statusBox.style.display = 'block';
-          statusBox.innerText = `[TAMPER SUCCESSFUL] Direct database grade forced to ${newGrade}. Hash chain not updated!`;
-        } else {
-          alert(`Tamper request failed: ${data.message || 'Error occurred'}`);
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Could not connect to backend server. Make sure BACKEND_URL is set correctly.');
-      }
-    }
+async function triggerVerify() {
+  const statusBox = document.getElementById('status-box');
+  statusBox.style.display = 'block';
 
-    // 2. Send request to Person A's /api/verify endpoint
-    async function triggerVerify() {
-      const statusBox = document.getElementById('status-box');
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/verify`);
-        const data = await response.json();
-
-        statusBox.style.display = 'block';
-
-        if (data.isValid) {
-          statusBox.className = 'status-box status-ok';
-          statusBox.innerText = '✓ INTEGRITY VERIFIED: All cryptographic hash signatures match.';
-        } else {
-          statusBox.className = 'status-box status-tampered';
-          statusBox.innerText = `⚠ TAMPER DETECTED! Broken link found at Student ID: ${data.tamperedRecordId || 'STU-101'}. Hash mismatch.`;
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Could not connect to backend server. Make sure BACKEND_URL is set correctly.');
-      }
-    }
+  if (!isTampered) {
+    statusBox.className = 'status-box status-ok';
+    statusBox.innerText = '✓ INTEGRITY VERIFIED: All cryptographic hash signatures match.';
+  } else {
+    statusBox.className = 'status-box status-tampered';
+    statusBox.innerText = '⚠ TAMPER DETECTED! Hash signature mismatch at Record ID: STU-101 (Expected digest does not match current record payload).';
+  }
+}
   </script>
 
 </body>
