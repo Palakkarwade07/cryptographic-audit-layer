@@ -1,57 +1,48 @@
-import { useAudit } from '../context/AuditStore'
-import {
-  AlertIcon,
-  LayoutIcon,
-  LinkIcon,
-  ScanIcon,
-  ShieldIcon,
-  TableIcon,
-} from './Icons'
+import React from 'react'
 
-const ITEMS = [
-  { id: 'overview', label: 'Overview', Icon: LayoutIcon },
-  { id: 'records', label: 'Records', Icon: TableIcon },
-  { id: 'chain', label: 'Audit Chain', Icon: LinkIcon },
-  { id: 'verify', label: 'Verify Integrity', Icon: ScanIcon },
-  { id: 'tamper', label: 'Tamper Demo', Icon: AlertIcon },
-]
-
-export function Sidebar({ open, onClose }) {
-  const { page, setPage, tampered } = useAudit()
+export default function Sidebar({ activeTab, setActiveTab }) {
+  const navItems = [
+    { id: 'overview', label: 'Overview', icon: '⊞' },
+    { id: 'records', label: 'Records', icon: '⊟' },
+    { id: 'chain', label: 'Audit Chain', icon: '∞' },
+    { id: 'verify', label: 'Verify Integrity', icon: '⇄' },
+    { id: 'tamper', label: 'Tamper Demo', icon: '⚠' },
+  ]
 
   return (
-    <aside className={`sidebar ${open ? 'open' : ''}`}>
-      <div className="brand">
-        <div className="brand-mark">
-          <ShieldIcon size={20} />
-        </div>
-        <div>
-          <h1>AuditGuard</h1>
-          <p>Make every change provable.</p>
-        </div>
+    <div style={{ width: '240px', backgroundColor: '#0f172a', color: '#fff', padding: '24px 16px', minHeight: '100vh' }}>
+      <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span>🛡</span> AuditGuard
       </div>
-
-      <nav className="nav">
-        {ITEMS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            className={`nav-btn ${page === id ? 'active' : ''}`}
-            onClick={() => {
-              setPage(id)
-              onClose()
-            }}
-          >
-            <Icon />
-            {label}
-          </button>
-        ))}
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 14px',
+                borderRadius: '6px',
+                border: 'none',
+                backgroundColor: isActive ? '#1e293b' : 'transparent',
+                color: isActive ? '#60a5fa' : '#94a3b8',
+                cursor: 'pointer',
+                textAlign: 'left',
+                fontSize: '14px',
+                fontWeight: isActive ? '600' : 'normal',
+                width: '100%',
+              }}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          )
+        })}
       </nav>
-
-      <div className="sim-note">
-        {tampered
-          ? 'Simulation active: historical data was altered outside the application flow.'
-          : 'Frontend simulation. No live database or cryptographic backend is connected.'}
-      </div>
-    </aside>
+    </div>
   )
 }
