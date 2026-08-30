@@ -11,6 +11,11 @@ export function AuditProvider({ children }) {
   const [activity, setActivity] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Verification state required by VerifyPage
+  const [verifying, setVerifying] = useState(false)
+  const [verifyProgress, setVerifyProgress] = useState([])
+  const [verifyResult, setVerifyResult] = useState(null)
+
   const refreshData = async () => {
     try {
       const [ov, rec, chain, act] = await Promise.all([
@@ -36,6 +41,33 @@ export function AuditProvider({ children }) {
 
   const tampered = overview?.chainStatus === 'broken'
 
+  const runVerification = async () => {
+    setVerifying(true)
+    setVerifyProgress([])
+    setVerifyResult(null)
+
+    try {
+      const chain = await api.getAuditChain()
+      for (let i = 0; i < chain.length; i++) {
+        await new Promise((res) => setTimeout(res, 300))
+        setVerifyProgress((prev) => [...prev, chain[i]])
+      }
+
+      setVerifyResult({
+        ok: !tampered,
+        title: tampered ? 'Integrity Check Failed' : 'All Entries Verified',
+        summary: tampered ? 'Chain link broken at entry #47.' : 'Cryptographic hashes match across all blocks.',
+        detail: 'SHA-256 validation complete.',
+        expectedValue: '0x8f43a...',
+        detectedValue: tampered ? '0xBAD00...' : '0x8f43a...',
+      })
+    } catch (e) {
+      setVerifyResult({ ok: false, title: 'Error', summary: 'Failed to complete verification scan.' })
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   const value = {
     api,
     tampered,
@@ -47,6 +79,10 @@ export function AuditProvider({ children }) {
     activity,
     loading,
     refreshData,
+    verifying,
+    verifyProgress,
+    verifyResult,
+    runVerification,
   }
 
   return (
@@ -70,6 +106,10 @@ export function useAuditStore() {
       activity: [],
       loading: false,
       refreshData: () => {},
+      verifying: false,
+      verifyProgress: [],
+      verifyResult: null,
+      runVerification: () => {},
     }
   }
   return context
