@@ -29,9 +29,9 @@ function DashboardView() {
   }
 
   return (
-    <div className="flex-1 min-h-screen bg-slate-50 text-slate-900">
+    <div style={{ flex: 1, minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0f172a' }}>
       <Header />
-      <main className="p-6 max-w-7xl mx-auto">
+      <main style={{ padding: '24px', maxWidth: '1280px', margin: '0 auto' }}>
         {renderContent()}
       </main>
     </div>
@@ -41,7 +41,7 @@ function DashboardView() {
 export default function App() {
   return (
     <AuditProvider>
-      <div className="flex min-h-screen bg-slate-900 text-slate-100 font-sans">
+      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: 'sans-serif' }}>
         <Sidebar />
         <DashboardView />
       </div>
