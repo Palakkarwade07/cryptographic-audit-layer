@@ -1,171 +1,207 @@
-import { useEffect, useState } from 'react'
-import { useAudit } from '../context/AuditStore'
-import { StatusBadge } from '../components/StatusBadge'
+import React, { useState } from 'react'
+import { useAuditStore } from '../context/AuditStore'
+import { simulateDatabaseTampering, resetSimulation, isTampered } from '../api/mockApi'
 
-export function TamperDemoPage() {
-  const {
-    api,
-    tampered,
-    simulateTamper,
-    runVerification,
-    resetSimulation,
-    verifying,
-    verifyResult,
-    verifyProgress,
-    setPage,
-  } = useAudit()
-  const target = api.getTamperTarget()
-  const [record, setRecord] = useState(null)
-  const [chain, setChain] = useState([])
-  const [busy, setBusy] = useState(false)
+export default function TamperDemoPage() {
+  const { records, refreshData, overview } = useAuditStore()
+  const [loading, setLoading] = useState(false)
+  const isCompromised = overview?.chainStatus === 'broken' || isTampered()
 
-  useEffect(() => {
-    let live = true
-    Promise.all([api.getRecords(), api.getAuditChain()]).then(([rows, entries]) => {
-      if (!live) return
-      setRecord(rows.find((r) => r.id === target.recordId) || null)
-      setChain(entries)
-    })
-    return () => { live = false }
-  }, [api, tampered, target.recordId])
+  const handleSimulate = async () => {
+    setLoading(true)
+    await simulateDatabaseTampering()
+    await refreshData()
+    setLoading(false)
+  }
 
-  const grade = record?.grade ?? target.expectedGrade
-
-  async function onTamper() {
-    setBusy(true)
-    await simulateTamper()
-    setBusy(false)
+  const handleReset = async () => {
+    setLoading(true)
+    await resetSimulation()
+    await refreshData()
+    setLoading(false)
   }
 
   return (
-    <div>
-      <div className="page-title">
-        <div>
-          <h3>Tamper demo</h3>
-          <p className="lede">
-            This simulation demonstrates what happens when historical data is
-            modified outside the normal application flow.
-          </p>
-        </div>
-        {tampered && (
-          <button className="btn btn-ghost" onClick={resetSimulation}>Reset simulation</button>
-        )}
-      </div>
-
-      <div className="banner" style={{ background: '#eef3f8', borderColor: 'var(--line)', color: 'var(--ink)' }}>
-        <h4>Simulation only</h4>
-        <p>
-          This control does not write to a real database. It changes in-memory demo
-          state so judges can see how a broken hash chain would be reported.
-        </p>
-      </div>
-
-      <div className="card record-panel">
-        <div>
-          <div className="k" style={{ color: 'var(--muted)', fontSize: 12 }}>Student</div>
-          <div className="v" style={{ fontWeight: 650, fontSize: 20 }}>Aditi Sharma</div>
-          <div style={{ marginTop: 12, color: 'var(--muted)' }}>STU-1024 · REC-8841</div>
-          <div style={{ marginTop: 16 }}>
-            <div className="k" style={{ color: 'var(--muted)', fontSize: 12 }}>Subject</div>
-            <div className="v" style={{ fontWeight: 600 }}>Database Management Systems</div>
-          </div>
-        </div>
-        <div>
-          <div className="grid-2">
-            <div className="kv">
-              <div className="k">Original grade</div>
-              <div className="v grade-xl">88</div>
-            </div>
-            <div className="kv">
-              <div className="k">Current grade</div>
-              <div className="v grade-xl" style={{ color: tampered ? 'var(--warn)' : 'var(--ink)' }}>
-                {grade}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ height: 16 }} />
-
-      {!tampered ? (
-        <button className="btn btn-danger" onClick={onTamper} disabled={busy}>
-          {busy ? 'Writing…' : 'Simulate Database Tampering'}
-        </button>
-      ) : (
-        <div>
-          <div className="banner bad">
-            <h4>TAMPERING DETECTED</h4>
-            <p>
-              The record value no longer matches its stored cryptographic hash.
-              Grade changed from {target.expectedGrade} to {target.tamperedGrade} without an audit entry.
+    <div style={{ maxWidth: '1100px', margin: '0 auto', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Simulation Controller Panel */}
+      <div
+        style={{
+          backgroundColor: '#0f172a',
+          color: '#ffffff',
+          padding: '24px',
+          borderRadius: '12px',
+          marginBottom: '28px',
+          boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.3)',
+          border: '1px solid #1e293b',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', margin: 0, color: '#f8fafc' }}>
+              Cryptographic Tamper Lab
+            </h2>
+            <p style={{ color: '#94a3b8', fontSize: '14px', margin: '4px 0 0' }}>
+              Simulate direct database mutations to test dynamic hash chain verification algorithms.
             </p>
           </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => runVerification({ navigate: false })}
-            disabled={verifying}
+          <span
+            style={{
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '700',
+              letterSpacing: '0.05em',
+              backgroundColor: isCompromised ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+              color: isCompromised ? '#fca5a5' : '#6ee7b7',
+              border: `1px solid ${isCompromised ? '#ef4444' : '#10b981'}`,
+            }}
           >
-            {verifying ? 'Verifying…' : 'Verify Again'}
+            {isCompromised ? '● HASH MISMATCH DETECTED' : '● ALL HASHS VALIDATED'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          <button
+            onClick={handleSimulate}
+            disabled={loading || isCompromised}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: isCompromised ? '#334155' : '#dc2626',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: isCompromised ? 'not-allowed' : 'pointer',
+              fontWeight: '600',
+              fontSize: '14px',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'Processing...' : 'Simulate Database Tamper (STU-1024)'}
           </button>
-          <button className="btn btn-ghost" style={{ marginLeft: 8 }} onClick={() => setPage('chain')}>
-            View audit chain
+          <button
+            onClick={handleReset}
+            disabled={loading || !isCompromised}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: !isCompromised ? '#334155' : '#2563eb',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: !isCompromised ? 'not-allowed' : 'pointer',
+              fontWeight: '600',
+              fontSize: '14px',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'Processing...' : 'Restore Ledger Integrity'}
           </button>
         </div>
-      )}
+      </div>
 
-      {tampered && (
-        <div style={{ marginTop: 18 }}>
-          <div className="section-head">
-            <h4>Chain around Entry #47</h4>
-            <span>Broken link after the compromised entry</span>
-          </div>
-          <div className="chain">
-            {chain.filter((e) => e.entryNumber >= 46 && e.entryNumber <= 48).map((entry, index, list) => (
-              <div className="chain-item" key={entry.id}>
-                <article className={`node ${entry.status}`}>
-                  <div className="k">Entry #{entry.entryNumber}</div>
-                  <h5>{entry.action}</h5>
-                  <div className={`hash mono ${entry.status === 'compromised' ? 'broken' : ''}`}>
-                    {entry.entryHash}
+      {/* Detailed Records List View */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', margin: 0 }}>
+          Database Records Sync Panel ({records.length} Active Node Entries)
+        </h3>
+        <span style={{ fontSize: '13px', color: '#64748b', fontFamily: 'monospace' }}>
+          Consensus Model: SHA-256 Merkle Chain
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {records.map((item) => {
+          const isTargetCompromised = item.status === 'compromised'
+          
+          return (
+            <div
+              key={item.id}
+              style={{
+                backgroundColor: isTargetCompromised ? '#fff5f5' : '#ffffff',
+                border: `1px solid ${isTargetCompromised ? '#fca5a5' : '#e2e8f0'}`,
+                borderRadius: '8px',
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                transition: 'border 0.2s ease',
+              }}
+            >
+              {/* Left Column: ID and Student Info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '1.2' }}>
+                <span
+                  style={{
+                    fontFamily: 'monospace',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    color: isTargetCompromised ? '#991b1b' : '#2563eb',
+                    backgroundColor: isTargetCompromised ? '#fee2e2' : '#eff6ff',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    border: `1px solid ${isTargetCompromised ? '#fecaca' : '#dbeafe'}`,
+                  }}
+                >
+                  {item.id}
+                </span>
+                <div>
+                  <div style={{ fontWeight: '700', fontSize: '15px', color: '#0f172a' }}>
+                    {item.student || 'Aarav Sharma'}
                   </div>
-                  <div style={{ marginTop: 10 }}><StatusBadge status={entry.status} /></div>
-                </article>
-                {index < list.length - 1 && (
-                  <div className={`connector ${entry.status === 'compromised' ? 'broken' : ''}`} />
-                )}
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                    Roll No: <span style={{ fontFamily: 'monospace' }}>2024-{item.id.replace('STU-', '')}</span> · Dept of Computer Engineering
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {verifying && (
-        <div className="card" style={{ padding: 18, marginTop: 12 }}>
-          <strong>Re-checking audit entries…</strong>
-          <div className="progress">
-            {verifyProgress.map((step) => (
-              <div className="progress-row" key={step.entryNumber}>
-                <span>Entry #{step.entryNumber}</span>
-                <StatusBadge status={step.status} />
+              {/* Middle Column: Course & Instructor */}
+              <div style={{ flex: '1.5' }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', backgroundColor: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', marginRight: '8px', fontFamily: 'monospace' }}>
+                    {item.code || 'CS-401'}
+                  </span>
+                  {item.course || 'Database Management Systems'}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                  Faculty Evaluator: {item.verifiedBy || 'Prof. Mehta'} · Term: Fall 2026
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {!verifying && verifyResult && tampered && (
-        <div className="card result-card" style={{ marginTop: 12 }}>
-          <div className="status-pill bad" style={{ margin: '0 auto' }}>
-            <span className="status-dot" />
-            FAIL
-          </div>
-          <h3 style={{ color: 'var(--warn)' }}>Integrity Check Failed</h3>
-          <p>Tampering detected at Entry #{target.entryNumber}</p>
-          <p>Expected value: {target.expectedGrade}</p>
-          <p>Detected value: {target.tamperedGrade}</p>
-        </div>
-      )}
+              {/* Timestamp */}
+              <div style={{ flex: '0.9', fontSize: '12px', color: '#64748b' }}>
+                <div>Last Signed:</div>
+                <div style={{ fontWeight: '500', color: '#334155' }}>{item.updatedAt || '29 Aug, 10:18 am'}</div>
+              </div>
+
+              {/* Right Column: Grade and Integrity Status Badge */}
+              <div style={{ textAlign: 'right', flex: '0.8' }}>
+                <div
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    color: isTargetCompromised ? '#dc2626' : '#16a34a',
+                  }}
+                >
+                  Grade: {item.grade}
+                </div>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '4px',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    backgroundColor: isTargetCompromised ? '#fee2e2' : '#dcfce7',
+                    color: isTargetCompromised ? '#991b1b' : '#15803d',
+                  }}
+                >
+                  {isTargetCompromised ? '✖ INVALID CHECKSUM' : '✓ SIGNED & VERIFIED'}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
