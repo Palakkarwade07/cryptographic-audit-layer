@@ -1,24 +1,14 @@
-import { useAudit } from '../context/AuditStore'
-import { MenuIcon } from './Icons'
+import React from 'react'
 
-export function Header({ onMenu }) {
-  const { tampered } = useAudit()
-
+export default function Header() {
   return (
-    <header className="header">
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <button className="menu-btn" onClick={onMenu} aria-label="Open navigation">
-          <MenuIcon />
-        </button>
-        <div>
-          <h2>Exam Records Integrity System</h2>
-          <p className="subtitle">Tamper-evident cryptographic audit trail</p>
-        </div>
-      </div>
-      <div className={`status-pill ${tampered ? 'bad' : 'ok'}`}>
-        <span className="status-dot" />
-        {tampered ? 'Integrity Alert' : 'System Protected'}
-      </div>
+    <header style={{ marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+        Exam Records Integrity System
+      </h1>
+      <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px', margin: 0 }}>
+        Tamper-evident cryptographic audit trail
+      </p>
     </header>
   )
 }
