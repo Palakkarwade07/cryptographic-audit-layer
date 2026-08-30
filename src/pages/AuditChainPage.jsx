@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuditStore } from '../context/AuditStore'
 import { formatDate, StatusBadge } from '../components/StatusBadge'
 
@@ -37,14 +37,12 @@ export function AuditChainPage() {
         </div>
       </div>
 
-      {tampered && (
+      {tampered ? (
         <div className="banner bad">
           <h4>Integrity violation detected</h4>
           <p>The connection after Entry #47 is broken. Subsequent entries cannot be trusted until the chain is restored from a known-good snapshot.</p>
         </div>
-      )}
-
-      {!tampered && (
+      ) : (
         <div className="banner ok">
           <h4>Chain intact</h4>
           <p>Each displayed entry links to the previous hash. Status: VALID.</p>
@@ -57,7 +55,7 @@ export function AuditChainPage() {
         <div className="chain">
           {entries.map((entry, index) => (
             <div className="chain-item" key={entry.id || index}>
-              <article className={`node ${entry.status}`}>
+              <article className={`node ${entry.status || ''}`}>
                 <div className="k">Entry #{String(entry.entryNumber || index + 1).padStart(2, '0')}</div>
                 <h5>{entry.action}</h5>
                 <div className="k">Record ID</div>
@@ -73,7 +71,7 @@ export function AuditChainPage() {
                   {entry.entryHash || entry.hash}
                 </div>
                 <div style={{ marginTop: 10 }}>
-                  {StatusBadge ? <StatusBadge status={entry.status} /> : <span>{entry.status}</span>}
+                  <StatusBadge status={entry.status} />
                 </div>
               </article>
               {index < entries.length - 1 && (
