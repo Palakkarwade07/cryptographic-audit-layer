@@ -3,6 +3,14 @@ const crypto = require('crypto');
 
 require('dotenv').config();
 const express = require('express');
+// Built-in tool for creating SHA-256 hashes
+const crypto = require('crypto');
+
+// Helper function to lock record data into a hash
+function calculateHash(studentId, name, grade, prevHash) {
+  const dataString = `${studentId}-${name}-${grade}-${prevHash}`;
+  return crypto.createHash('sha256').update(dataString).digest('hex');
+}
 const cors = require('cors');
 const { Pool } = require('pg');
 
@@ -173,7 +181,33 @@ app.use((err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
+// Endpoint to verify all hashes sequentially
+app.get('/api/records/verify', async (req, res) => {
+  try {
+    const { rows: records } = await pool.query('SELECT * FROM records ORDER BY id ASC');
+    let expectedPrevHash = "0";
 
+    for (let i = 0; i < records.length; i++) {
+      const rec = records[i];
+      const recalculatedHash = calculateHash(rec.student_id, rec.name, rec.grade, rec.prev_hash);
+
+      // If the hash doesn't match, tamper detected!
+      if (rec.prev_hash !== expectedPrevHash || recalculatedHash !== rec.entry_hash) {
+        return res.json({
+          isValid: false,
+          tamperedRecordId: rec.student_id,
+          message: `Tamper detected at record ${rec.student_id}! Hash mismatch.`
+        });
+      }
+
+      expectedPrevHash = rec.entry_hash;
+    }
+
+    res.json({ isValid: true, message: "All signatures match cleanly." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
