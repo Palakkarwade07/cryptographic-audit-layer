@@ -2,13 +2,16 @@ import React from 'react'
 
 export default function Header() {
   return (
-    <header style={{ marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
-      <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
-        Exam Records Integrity System
-      </h1>
-      <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px', margin: 0 }}>
-        Tamper-evident cryptographic audit trail
-      </p>
+    <header className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm flex justify-between items-center">
+      <div>
+        <h1 className="text-xl font-bold text-slate-900">Exam Records Integrity System</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Tamper-evident cryptographic audit trail engine</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          ● Live Blockchain Sync
+        </span>
+      </div>
     </header>
   )
 }
