@@ -10,9 +10,9 @@ export default function TamperDemo({ onRefresh }) {
     try {
       await simulateDatabaseTampering()
       setTamperState(true)
-      if (onRefresh) onRefresh()
+      if (onRefresh) await onRefresh()
     } catch (err) {
-      console.error('Tamper simulation error:', err)
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -23,61 +23,60 @@ export default function TamperDemo({ onRefresh }) {
     try {
       await resetSimulation()
       setTamperState(false)
-      if (onRefresh) onRefresh()
+      if (onRefresh) await onRefresh()
     } catch (err) {
-      console.error('Reset error:', err)
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '800px' }}>
-      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-        Tamper Simulation Lab
-      </h2>
-      <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-        Simulate an out-of-band database update to break the cryptographic audit chain.
+    <div style={{ padding: '24px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>Tamper Simulation Lab</h2>
+      <p style={{ color: '#64748b', marginBottom: '20px' }}>
+        Simulate an out-of-band database update to test cryptographic chain detection.
       </p>
+      
+      <div style={{ padding: '16px', borderRadius: '6px', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', marginBottom: '20px' }}>
+        <strong>Status: </strong> 
+        <span style={{ color: tamperState ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+          {tamperState ? 'COMPROMISED (Tampered)' : 'SECURE (Verified)'}
+        </span>
+      </div>
 
-      <div style={{ padding: '20px', borderRadius: '8px', border: '1px solid #e5e7eb', backgroundColor: '#fff' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
-          Current State: {tamperState ? <span style={{ color: '#ef4444' }}>COMPROMISED</span> : <span style={{ color: '#10b981' }}>SECURE</span>}
-        </h3>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button
+          onClick={handleSimulate}
+          disabled={loading || tamperState}
+          style={{
+            padding: '10px 16px',
+            backgroundColor: tamperState ? '#cbd5e1' : '#ef4444',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: tamperState ? 'not-allowed' : 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          {loading ? 'Processing...' : 'Simulate Database Tamper'}
+        </button>
 
-        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-          <button
-            onClick={handleSimulate}
-            disabled={loading || tamperState}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: tamperState ? '#9ca3af' : '#ef4444',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: tamperState ? 'not-allowed' : 'pointer',
-              fontWeight: '600'
-            }}
-          >
-            {loading ? 'Simulating...' : 'Simulate Database Tamper'}
-          </button>
-
-          <button
-            onClick={handleReset}
-            disabled={loading || !tamperState}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: !tamperState ? '#9ca3af' : '#2563eb',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: !tamperState ? 'not-allowed' : 'pointer',
-              fontWeight: '600'
-            }}
-          >
-            Reset Chain Integrity
-          </button>
-        </div>
+        <button
+          onClick={handleReset}
+          disabled={loading || !tamperState}
+          style={{
+            padding: '10px 16px',
+            backgroundColor: !tamperState ? '#cbd5e1' : '#2563eb',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: !tamperState ? 'not-allowed' : 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          Reset Simulation
+        </button>
       </div>
     </div>
   )
