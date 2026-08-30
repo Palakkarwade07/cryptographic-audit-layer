@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import * as api from '../api/mockApi'
 
-const AuditContext = createContext()
+const AuditContext = createContext(null)
 
 export function AuditProvider({ children }) {
   const [activeTab, setActiveTab] = useState('overview')
@@ -34,29 +34,35 @@ export function AuditProvider({ children }) {
     refreshData()
   }, [])
 
+  const value = {
+    activeTab,
+    setActiveTab,
+    overview,
+    records,
+    auditChain,
+    activity,
+    loading,
+    refreshData,
+  }
+
   return (
-    <AuditContext.Provider
-      value={{
-        activeTab,
-        setActiveTab,
-        overview,
-        records,
-        auditChain,
-        activity,
-        loading,
-        refreshData,
-      }}
-    >
+    <AuditContext.Provider value={value}>
       {children}
     </AuditContext.Provider>
   )
 }
 
-// Export both names to satisfy all imports across pages
+// Exports covering all import syntaxes used across pages
 export function useAuditStore() {
-  return useContext(AuditContext)
+  const context = useContext(AuditContext)
+  if (!context) {
+    return { activeTab: 'overview', setActiveTab: () => {}, records: [], overview: null, auditChain: [], activity: [], loading: false, refreshData: () => {} }
+  }
+  return context
 }
 
 export function useAudit() {
-  return useContext(AuditContext)
+  return useAuditStore()
 }
+
+export default useAuditStore
