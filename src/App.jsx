@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import OverviewPage from './pages/OverviewPage'
 import RecordsPage from './pages/RecordsPage'
-import AuditChainPage from './pages/AuditChainPage'
+import { AuditChainPage } from './pages/AuditChainPage'
 import VerifyPage from './pages/VerifyPage'
 import TamperDemoPage from './pages/TamperDemoPage'
 
