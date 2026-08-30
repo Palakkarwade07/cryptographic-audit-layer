@@ -81,6 +81,19 @@ makes this detectable.
 
 ## Tech Stack
 
+Frontend
+React (Vite) – Fast, component-based user interface and development server.
+Tailwind CSS / Lucide Icons – Clean styling, responsive layout, and modern icon set for audit status indicators.
+State & Data Handling – Modular React hooks paired with mockApi.js for instant local testing and fallback logic.
+
+Backend & Database
+Node.js & Express – REST API handling endpoints, data routing, and request validation.
+SQLite – Lightweight, zero-config relational database used to store audit records, logs, and verification hashes.
+
+Deployment & Infrastructure
+Vercel – Frontend hosting, continuous integration, and automated deployments from GitHub.
+Render – Live web service platform hosting the Node.js API server and database setup.
+Git & GitHub – Version control and project collaboration workflow.
 
 
 ## Demo
@@ -88,9 +101,11 @@ GitHub Repository: cryptographic-audit-layer.vercel.app
 
 
 ## Screenshots
-<img width="1267" height="907" alt="image" src="https://github.com/user-attachments/assets/09680871-8329-4633-ab74-b7be2d9f6c72" />
-
-
+<img width="1902" height="905" alt="image" src="https://github.com/user-attachments/assets/68a9cefa-89b2-421d-8ddd-9f00c1b32b1f" />
+<img width="1887" height="901" alt="image" src="https://github.com/user-attachments/assets/2d90757c-5b94-481d-8f16-626a1d63bdaf" />
+<img width="1897" height="897" alt="image" src="https://github.com/user-attachments/assets/a21b4ec6-42ce-439c-864a-e621fa71543f" />
+<img width="1651" height="475" alt="image" src="https://github.com/user-attachments/assets/46d8ef8d-e505-410d-a279-1b23a57dc9c5" />
+<img width="1312" height="823" alt="image" src="https://github.com/user-attachments/assets/8b369d5b-c8ea-4e49-93d2-adbfe7c33ccb" />
 
 
 ## Innovation & Impact
