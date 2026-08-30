@@ -125,15 +125,18 @@ export async function verifyIntegrity() {
 }
 
 export async function simulateDatabaseTampering() {
-  const response = await fetch("https://cryptographic-audit-layer.onrender.com/api/tamper", {
-    method: "POST"
-  });
-  return await response.json();
+  await delay(220)
+  tampered = true
+  return {
+    simulation: true,
+    recordId: TAMPER_TARGET.recordId,
+    expectedGrade: TAMPER_TARGET.expectedGrade,
+    detectedGrade: TAMPER_TARGET.tamperedGrade,
+  }
 }
 
 export async function resetSimulation() {
-  const response = await fetch("https://cryptographic-audit-layer.onrender.com/api/reset", {
-    method: "POST"
-  });
-  return await response.json();
+  await delay(100)
+  tampered = false
+  return { simulation: true, reset: true }
 }
