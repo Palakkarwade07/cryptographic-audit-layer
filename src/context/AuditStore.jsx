@@ -34,7 +34,11 @@ export function AuditProvider({ children }) {
     refreshData()
   }, [])
 
+  const tampered = overview?.chainStatus === 'broken'
+
   const value = {
+    api,
+    tampered,
     activeTab,
     setActiveTab,
     overview,
@@ -52,11 +56,21 @@ export function AuditProvider({ children }) {
   )
 }
 
-// Exports covering all import syntaxes used across pages
 export function useAuditStore() {
   const context = useContext(AuditContext)
   if (!context) {
-    return { activeTab: 'overview', setActiveTab: () => {}, records: [], overview: null, auditChain: [], activity: [], loading: false, refreshData: () => {} }
+    return {
+      api,
+      tampered: false,
+      activeTab: 'overview',
+      setActiveTab: () => {},
+      records: [],
+      overview: null,
+      auditChain: [],
+      activity: [],
+      loading: false,
+      refreshData: () => {},
+    }
   }
   return context
 }
