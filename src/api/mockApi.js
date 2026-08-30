@@ -18,6 +18,7 @@ import {
   TAMPER_TARGET,
 } from '../data/mockData'
 
+const API_BASE_URL = "https://cryptographic-audit-layer.onrender.com";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let tampered = false
@@ -124,22 +125,15 @@ export async function verifyIntegrity() {
 }
 
 export async function simulateDatabaseTampering() {
-  await delay(220)
-  tampered = true
-  return {
-    simulation: true,
-    recordId: TAMPER_TARGET.recordId,
-    expectedGrade: TAMPER_TARGET.expectedGrade,
-    detectedGrade: TAMPER_TARGET.tamperedGrade,
-  }
+  const response = await fetch("https://cryptographic-audit-layer.onrender.com/api/tamper", {
+    method: "POST"
+  });
+  return await response.json();
 }
 
 export async function resetSimulation() {
-  await delay(100)
-  tampered = false
-  return { simulation: true, reset: true }
-}
-
-export function getTamperTarget() {
-  return { ...TAMPER_TARGET }
+  const response = await fetch("https://cryptographic-audit-layer.onrender.com/api/reset", {
+    method: "POST"
+  });
+  return await response.json();
 }
