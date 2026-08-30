@@ -86,9 +86,8 @@ React (Vite) – Fast, component-based user interface and development server.
 Tailwind CSS / Lucide Icons – Clean styling, responsive layout, and modern icon set for audit status indicators.
 State & Data Handling – Modular React hooks paired with mockApi.js for instant local testing and fallback logic.
 
-Backend & Database
-Node.js & Express – REST API handling endpoints, data routing, and request validation.
-SQLite – Lightweight, zero-config relational database used to store audit records, logs, and verification hashes.
+Backend & Database: Node.js & Express – REST API handling endpoints, data routing, and request validation. SQLite / Supabase (PostgreSQL) – Database setup used to 
+store audit records, logs, and verification hashes (SQLite for local testing, Supabase for production hosting).
 
 Deployment & Infrastructure
 Vercel – Frontend hosting, continuous integration, and automated deployments from GitHub.
