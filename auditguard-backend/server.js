@@ -4,7 +4,6 @@ const crypto = require('crypto');
 require('dotenv').config();
 const express = require('express');
 // Built-in tool for creating SHA-256 hashes
-const crypto = require('crypto');
 
 // Helper function to lock record data into a hash
 function calculateHash(studentId, name, grade, prevHash) {
