@@ -1,8 +1,14 @@
-import { useAudit } from '../context/AuditStore'
+import React from 'react'
+import { useAuditStore } from '../context/AuditStore'
 import { StatusBadge } from '../components/StatusBadge'
 
 export function VerifyPage() {
-  const { runVerification, verifying, verifyProgress, verifyResult, tampered } = useAudit()
+  const store = useAuditStore()
+  const runVerification = store.runVerification || (() => {})
+  const verifying = store.verifying || false
+  const verifyProgress = store.verifyProgress || []
+  const verifyResult = store.verifyResult || null
+  const tampered = store.tampered || false
 
   return (
     <div>
@@ -23,9 +29,9 @@ export function VerifyPage() {
         <div className="card" style={{ padding: 18 }}>
           <strong>Checking audit entries…</strong>
           <div className="progress">
-            {verifyProgress.map((step) => (
-              <div className="progress-row" key={step.entryNumber}>
-                <span>Entry #{step.entryNumber}</span>
+            {verifyProgress.map((step, index) => (
+              <div className="progress-row" key={step.entryNumber || index}>
+                <span>Entry #{step.entryNumber || index + 1}</span>
                 <StatusBadge status={step.status === 'valid' && tampered === false ? 'valid' : step.status} />
               </div>
             ))}
@@ -63,3 +69,5 @@ export function VerifyPage() {
     </div>
   )
 }
+
+export default VerifyPage
